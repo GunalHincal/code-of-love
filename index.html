@@ -100,7 +100,7 @@
     }
 
     window.addEventListener("resize", resizeCanvas);
-    resizeCanvas(); // Başlangıçta çağır
+    resizeCanvas();
 
     function xt(t) {
       return 16 * Math.pow(Math.sin(t), 3);
@@ -231,6 +231,8 @@
       topCtx.globalCompositeOperation = "destination-out";
 
       let dragging = false;
+
+      // Mouse
       eraser.addEventListener("mousedown", () => dragging = true);
       window.addEventListener("mouseup", () => dragging = false);
       window.addEventListener("mousemove", (e) => {
@@ -239,6 +241,21 @@
         const y = e.clientY - rect.top;
         eraser.style.left = `${e.clientX - 40}px`;
         eraser.style.top = `${e.clientY - 40}px`;
+        topCtx.beginPath();
+        topCtx.arc(x, y, 35, 0, 2 * Math.PI);
+        topCtx.fill();
+      });
+
+      // Touch
+      eraser.addEventListener("touchstart", () => dragging = true);
+      window.addEventListener("touchend", () => dragging = false);
+      window.addEventListener("touchmove", (e) => {
+        if (!dragging || e.touches.length === 0) return;
+        const touch = e.touches[0];
+        const x = touch.clientX - rect.left;
+        const y = touch.clientY - rect.top;
+        eraser.style.left = `${touch.clientX - 40}px`;
+        eraser.style.top = `${touch.clientY - 40}px`;
         topCtx.beginPath();
         topCtx.arc(x, y, 35, 0, 2 * Math.PI);
         topCtx.fill();
