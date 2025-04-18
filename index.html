@@ -114,8 +114,10 @@
       ctx.clearRect(0, 0, baseCanvas.width, baseCanvas.height);
       ctx.beginPath();
       let i = 0;
+      const isMobile = /Mobi|Android/i.test(navigator.userAgent);
+      const speedFactor = isMobile ? 0.03 : 0.01;
       function step() {
-        const t = i * 0.01;
+        const t = i * speedFactor;
         const x = xt(t) * 15 + baseCanvas.width / 2;
         const y = -yt(t) * 15 + baseCanvas.height / 2;
         if (i === 0) ctx.moveTo(x, y);
@@ -192,7 +194,7 @@
 
     function fillCanvasWithHearts(callback) {
       let count = 0;
-      const max = 800;
+      const max = 1000;
       const interval = setInterval(() => {
         const x = Math.random() * topCanvas.width;
         const y = Math.random() * topCanvas.height;
