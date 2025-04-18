@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <title>Sana Özel Kalp</title>
+  <link rel="icon" href="❤️">
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      background-color: black;
+      font-family: Arial, sans-serif;
+      text-align: center;
+      height: 100%;
+      width: 100%;
+    }
+
+    h1 {
+      margin-top: 20px;
+      color: white;
+    }
+
+    #startBtn, #eraseBtn {
+      font-size: 20px;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 10px;
+      background-color: red;
+      color: white;
+      cursor: pointer;
+      position: relative;
+      z-index: 10;
+    }
+
+    #eraseBtn {
+      display: none;
+      background-color: white;
+      color: black;
+      position: absolute;
+      z-index: 11;
+    }
+
+    #eraser {
+      display: none;
+      position: absolute;
+      font-size: 80px;
+      cursor: grab;
+      z-index: 20;
+      user-select: none;
+    }
+
+    canvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      background-color: transparent;
+      z-index: 1;
+    }
+
+    #footer {
+      position: absolute;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      color: pink;
+      font-size: 16px;
+      z-index: 30;
+    }
+  </style>
+</head>
+<body>
+  <h1>Yazılımcılar böyle sever...</h1>
+  <button id="startBtn" onclick="start()">Bana Bas</button>
+  <button id="eraseBtn" onclick="activateEraser()">🧽 Ekranı Sil</button>
+  <div id="eraser">🧽</div>
+  <canvas id="baseCanvas"></canvas>
+  <canvas id="topCanvas"></canvas>
+  <div id="footer">Bu kalp sana özel çizildi.</div>
+  <audio id="bgMusic" src="music.mp3" preload="auto"></audio>
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+  <script>
+    const baseCanvas = document.getElementById("baseCanvas");
+    const baseCtx = baseCanvas.getContext("2d");
+    const topCanvas = document.getElementById("topCanvas");
+    const topCtx = topCanvas.getContext("2d");
+    const eraser = document.getElementById("eraser");
+    const music = document.getElementById("bgMusic");
+    const startBtn = document.getElementById("startBtn");
+    const eraseBtn = document.getElementById("eraseBtn");
+
+    const colors = ["#f8c8dc", "#ffb6c1", "#ff69b4", "white", "red", "#ff4f4f"];
+
+    function resizeCanvas() {
+      baseCanvas.width = window.innerWidth;
+      baseCanvas.height = window.innerHeight;
+      topCanvas.width = window.innerWidth;
+      topCanvas.height = window.innerHeight;
+    }
+
+    window.addEventListener("resize", resizeCanvas);
+    resizeCanvas(); // Başlangıçta çağır
+
+    function xt(t) {
+      return 16 * Math.pow(Math.sin(t), 3);
+    }
+
+    function yt(t) {
+      return 13 * Math.cos(t) - 5 * Math.cos(2 * t) - 2 * Math.cos(3 * t) - Math.cos(4 * t);
+    }
+
+    function drawHeartStepByStep(ctx, withText, callback) {
+      ctx.clearRect(0, 0, baseCanvas.width, baseCanvas.height);
+      ctx.beginPath();
+      let i = 0;
+      function step() {
+        const t = i * 0.01;
+        const x = xt(t) * 15 + baseCanvas.width / 2;
+        const y = -yt(t) * 15 + baseCanvas.height / 2;
+        if (i === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+        ctx.strokeStyle = "red";
+        ctx.lineWidth = 2;
+        ctx.stroke();
+        i++;
+        if (t < Math.PI * 2) {
+          requestAnimationFrame(step);
+        } else {
+          ctx.closePath();
+          if (withText) {
+            ctx.fillStyle = "white";
+            ctx.font = "bold 40px Arial";
+            ctx.textAlign = "center";
+            ctx.fillText("I", baseCanvas.width / 2, baseCanvas.height / 2 - 10);
+            ctx.fillText("LOVE YOU", baseCanvas.width / 2, baseCanvas.height / 2 + 35);
+          }
+          callback();
+        }
+      }
+      step();
+    }
+
+    function start() {
+      startBtn.disabled = true;
+      music.play();
+      drawHeartStepByStep(baseCtx, false, () => {
+        launchConfetti();
+      });
+    }
+
+    function launchConfetti() {
+      const duration = 3000;
+      const animationEnd = Date.now() + duration;
+
+      const interval = setInterval(() => {
+        const timeLeft = animationEnd - Date.now();
+        if (timeLeft <= 0) {
+          clearInterval(interval);
+          startHeartRain();
+          return;
+        }
+
+        const x = Math.random();
+        const y = Math.random();
+        const count = 100 + Math.floor(Math.random() * 50);
+
+        confetti({
+          origin: { x, y },
+          particleCount: count,
+          spread: 360,
+          startVelocity: 70,
+          gravity: 0.5,
+          ticks: 200,
+          scalar: 1.2,
+          zIndex: 999999,
+          decay: 0.9
+        });
+      }, 300);
+    }
+
+    function startHeartRain() {
+      drawHeartStepByStep(baseCtx, false, () => {
+        fillCanvasWithHearts(() => {
+          const rect = topCanvas.getBoundingClientRect();
+          eraseBtn.style.display = "block";
+          eraseBtn.style.left = `${rect.left + rect.width / 2 - 60}px`;
+          eraseBtn.style.top = `${rect.top + rect.height / 2}px`;
+        });
+      });
+    }
+
+    function fillCanvasWithHearts(callback) {
+      let count = 0;
+      const max = 800;
+      const interval = setInterval(() => {
+        const x = Math.random() * topCanvas.width;
+        const y = Math.random() * topCanvas.height;
+        const size = Math.random() * 20 + 10;
+        const color = colors[Math.floor(Math.random() * colors.length)];
+        drawHeart(topCtx, x, y, size, color);
+        count++;
+        if (count >= max) {
+          clearInterval(interval);
+          callback();
+        }
+      }, 10);
+    }
+
+    function drawHeart(ctx, x, y, size, color) {
+      ctx.beginPath();
+      ctx.moveTo(x, y);
+      ctx.bezierCurveTo(x, y - size / 2, x - size, y - size / 2, x - size, y);
+      ctx.bezierCurveTo(x - size, y + size, x, y + size * 1.5, x, y + size * 2);
+      ctx.bezierCurveTo(x, y + size * 1.5, x + size, y + size, x + size, y);
+      ctx.bezierCurveTo(x + size, y - size / 2, x, y - size / 2, x, y);
+      ctx.fillStyle = color;
+      ctx.fill();
+      ctx.closePath();
+    }
+
+    function activateEraser() {
+      eraseBtn.style.display = "none";
+
+      const btnRect = startBtn.getBoundingClientRect();
+      eraser.style.display = "block";
+      eraser.style.left = `${btnRect.left - 80}px`;
+      eraser.style.top = `${btnRect.top + btnRect.height / 2 - 40}px`;
+
+      const rect = topCanvas.getBoundingClientRect();
+      topCtx.globalCompositeOperation = "destination-out";
+
+      let dragging = false;
+      eraser.addEventListener("mousedown", () => dragging = true);
+      window.addEventListener("mouseup", () => dragging = false);
+      window.addEventListener("mousemove", (e) => {
+        if (!dragging) return;
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        eraser.style.left = `${e.clientX - 40}px`;
+        eraser.style.top = `${e.clientY - 40}px`;
+        topCtx.beginPath();
+        topCtx.arc(x, y, 35, 0, 2 * Math.PI);
+        topCtx.fill();
+      });
+
+      drawGlowingHeart();
+      setTimeout(finalConfetti, 4000);
+    }
+
+    function drawGlowingHeart() {
+      let glow = 0;
+      function animateGlow() {
+        glow = (glow + 1) % 50;
+
+        baseCtx.clearRect(0, 0, baseCanvas.width, baseCanvas.height);
+        baseCtx.beginPath();
+        for (let t = 0; t < Math.PI * 2; t += 0.01) {
+          const x = xt(t) * 15 + baseCanvas.width / 2;
+          const y = -yt(t) * 15 + baseCanvas.height / 2;
+          if (t === 0) baseCtx.moveTo(x, y);
+          else baseCtx.lineTo(x, y);
+        }
+        baseCtx.closePath();
+
+        baseCtx.shadowColor = "red";
+        baseCtx.shadowBlur = glow;
+        baseCtx.strokeStyle = "red";
+        baseCtx.lineWidth = 2;
+        baseCtx.stroke();
+        baseCtx.shadowBlur = 0;
+
+        baseCtx.fillStyle = "white";
+        baseCtx.font = "bold 40px Arial";
+        baseCtx.textAlign = "center";
+        baseCtx.fillText("I", baseCanvas.width / 2, baseCanvas.height / 2 - 10);
+        baseCtx.fillText("LOVE YOU", baseCanvas.width / 2, baseCanvas.height / 2 + 35);
+
+        requestAnimationFrame(animateGlow);
+      }
+      animateGlow();
+    }
+
+    function finalConfetti() {
+      confetti({
+        particleCount: 250,
+        spread: 360,
+        origin: { x: 0.5, y: 0.5 },
+        startVelocity: 70,
+        gravity: 0.5,
+        decay: 0.9,
+        ticks: 200,
+        zIndex: 999999
+      });
+    }
+  </script>
+</body>
+</html>
