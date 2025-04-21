@@ -63,6 +63,17 @@ A simple but magical interaction to surprise someone you care about.
 
 ---
 
+## 🐍 Bonus: Draw the Heart Locally with Python Turtle
+
+If you'd like to draw a simple heart locally using Python and Turtle graphics, it is included a basic version of the animation in the `src/app.py` file.
+
+Just run this file on your local machine:
+
+```bash
+python src/app.py
+```
+---
+
 ## 📄 License
 
 This project is open-source and free to use.  
