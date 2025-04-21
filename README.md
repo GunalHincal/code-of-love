@@ -50,8 +50,9 @@ Clone the repository and open the `index.html` file in your browser:
 ```bash
 git clone https://github.com/YOUR_USERNAME/code-of-love.git
 cd code-of-love
-# Open index.html with any browser
 
+# Open index.html with any browser
+```
 
 ## 💡 Inspiration
 
